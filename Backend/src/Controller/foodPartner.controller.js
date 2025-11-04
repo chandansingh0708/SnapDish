@@ -1,29 +1,31 @@
-const User = require("../Models/user.model");
+const PartnerModel = require("../Models/foodPartner.model");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-const userController = async (req, res) => {
+const partnerAuth = async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
 
-    const userExist = await User.findOne({ email });
-    if (userExist) {
+    const existingPartner = await PartnerModel.findOne({ email });
+    if (existingPartner) {
       return res.status(400).json({
-        message: "This Email Already Exists.",
+        message: "Partner already exists with this email",
       });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await User.create({
+    const newPartner = await PartnerModel.create({
       fullName,
       email,
       password: hashedPassword,
     });
 
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_TOKEN, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      { id: newPartner._id },
+      process.env.JWT_TOKEN,
+      { expiresIn: "7d" }
+    );
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -32,10 +34,11 @@ const userController = async (req, res) => {
     });
 
     res.status(201).json({
-      message: "You Registered Successfully.",
-      user: {
-        fullName: newUser.fullName,
-        email: newUser.email,
+      message: "Wow, you registered successfully.",
+      partner: {
+        id: newPartner._id,
+        fullName: newPartner.fullName,
+        email: newPartner.email,
       },
     });
   } catch (error) {
@@ -43,28 +46,31 @@ const userController = async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 };
-//USer Login Logic....
 
-const Login = async (req, res) => {
+
+//Partner Login Logic..
+
+const partnerLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const isUserExist = await User.findOne({ email });
-    if (!isUserExist) {
+    const partnerExist = await PartnerModel.findOne({ email });
+
+    if (!partnerExist) {
       return res.status(400).json({
-        message: "Something went wrong with your email or password.",
+        message: "Sorry, please input correct email or password.",
       });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, isUserExist.password);
+    const isPasswordValid = await bcrypt.compare(password, partnerExist.password);
     if (!isPasswordValid) {
       return res.status(400).json({
         message: "Invalid credentials.",
       });
     }
 
-    const token = jwt.sign({ id: isUserExist._id }, process.env.JWT_TOKEN, {
-      expiresIn: "7d",
+    const token = jwt.sign({ id: partnerExist._id }, process.env.JWT_TOKEN, {
+      expiresIn: "1d",
     });
 
     res.cookie("token", token, {
@@ -75,9 +81,9 @@ const Login = async (req, res) => {
 
     res.status(200).json({
       message: "Login successful.",
-      user: {
-        fullName: isUserExist.fullName,
-        email: isUserExist.email,
+      partner: {
+        fullName: partnerExist.fullName,
+        email: partnerExist.email,
       },
     });
   } catch (error) {
@@ -86,7 +92,7 @@ const Login = async (req, res) => {
   }
 };
 
-const Logout = (req, res) => {
+const partnerLogout = (req, res) => {
   try {
     res.clearCookie("token");
     res.status(200).json({
@@ -98,4 +104,8 @@ const Logout = (req, res) => {
   }
 };
 
-module.exports = { userController, Login, Logout };
+module.exports={
+    partnerAuth ,
+    partnerLogin,
+    partnerLogout
+}
