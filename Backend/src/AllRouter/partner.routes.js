@@ -3,9 +3,9 @@ const router=express.Router();
 const { partnerAuth ,partnerLogin,partnerLogout}=require("../Controller/foodPartner.controller");
 
 
-router.post("/partner/register",partnerAuth);
-router.post('/partner/login',partnerLogin);
+router.post("/register",partnerAuth);
+router.post('/login',partnerLogin);
 
-router.get("/partner/logout",partnerLogout);
+router.get("/logout",partnerLogout);
 
 module.exports=router;
