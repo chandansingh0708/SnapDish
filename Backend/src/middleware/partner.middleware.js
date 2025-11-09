@@ -1,4 +1,5 @@
 const PartnerModel = require("../Models/foodPartner.model");
+
 const jwt = require("jsonwebtoken");
 
 const partnerAuth_MiddleWare = async (req, res, next) => {
@@ -20,8 +21,8 @@ const partnerAuth_MiddleWare = async (req, res, next) => {
             });
         }
 
-        req.partner = partner; // attach partner info to request
-        next(); // move to next middleware or route
+        req.partner = partner; 
+        next(); 
 
     } catch (error) {
         return res.status(401).json({
